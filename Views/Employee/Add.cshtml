@@ -1,0 +1,146 @@
+﻿@model PracticalTest.Models.AddEmployeeViewModel
+
+<form id="employeeForm" method="post" asp-action="Add">
+    <input type="hidden" asp-for="EmployeeID" />
+    <div class="mb-3">
+        <label for="EmployeeName" class="form-label">Name</label>
+        <input type="text" class="form-control" asp-for="EmployeeName" />
+        <span asp-validation-for="EmployeeName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label for="ShortName" class="form-label">Short Name</label>
+        <input type="text" class="form-control" asp-for="ShortName" />
+        <span asp-validation-for="ShortName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label for="DateOfBirth" class="form-label">Date of Birth</label>
+        <input type="date" class="form-control" asp-for="DateOfBirth" />
+        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label for="Age" class="form-label">Age</label>
+        <input type="number" class="form-control" asp-for="Age" readonly />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Gender</label>
+        <div class="d-inline-block me-2">
+            <input type="radio" asp-for="Gender" value="Male" id="Male" />
+            <label for="Male">Male</label>
+        </div>
+        <div class="d-inline-block me-2">
+            <input type="radio" asp-for="Gender" value="Female" id="Female" />
+            <label for="Female">Female</label>
+        </div>
+        <span asp-validation-for="Gender" class="text-danger"></span>
+    </div>
+
+@*     <div class="mb-3">
+        <label class="form-label">Gender</label>
+        <div>
+            <input type="radio" asp-for="Gender" value="Male" />
+            <label for="Male">Male</label>
+        </div>
+        <div>
+            <input type="radio" asp-for="Gender" value="Female" />
+            <label for="Female">Female</label>
+        </div>
+        <span asp-validation-for="Gender" class="text-danger"></span>
+    </div> *@
+    <div class="mb-3">
+        <label class="form-label">Language Known</label>
+        <div class="d-inline-block me-2">
+            <input type="checkbox" name="LanguageKnown" value="English" @((Model.LanguageKnown.Contains("English") ? "checked" : "")) />
+            <label for="English">English</label>
+        </div>
+        <div class="d-inline-block me-2">
+            <input type="checkbox" name="LanguageKnown" value="Hindi" @((Model.LanguageKnown.Contains("Hindi") ? "checked" : "")) />
+            <label for="Hindi">Hindi</label>
+        </div>
+        <div class="d-inline-block me-2">
+            <input type="checkbox" name="LanguageKnown" value="Gujarati" @((Model.LanguageKnown.Contains("Gujarati") ? "checked" : "")) />
+            <label for="Gujarati">Gujarati</label>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary" id="addButton">Add Data</button>
+    <button type="button" class="btn btn-primary" id="updateButton"  onclick="updateEmployee()">Update Employee</button>
+     <button type="submit" class="btn btn-primary" id="addButton">Insert</button>
+    <button type="submit" class="btn btn-primary" id="addButton">Add Employee</button>
+    <button type="submit" class="btn btn-primary" id="EmployeeID">Delete</button>
+    <button type="button" class="btn btn-primary" id="closeButton" onclick="closeWindow()">Close</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Emp ID</th>
+            <th>Name</th>
+            <th>Short</th>
+            <th>DateOfBirth</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Language Known</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var employee in Model.Employees)
+        {
+            <tr ondblclick="editEmployee(@employee.EmployeeID)">
+                <td>@employee.EmployeeID</td>
+                <td>@employee.EmployeeName</td>
+                <td>@employee.ShortName</td>
+                <td>@employee.DateOfBirth.ToString("dd/MM/yyyy")</td>
+                <td>@employee.Age</td>
+                <td>@employee.Gender</td>
+                <td>@employee.LanguageKnown</td>
+                <td>
+                    <form method="post" asp-action="Delete" asp-route-id="@employee.EmployeeID" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        function editEmployee(id) {
+            $.ajax({
+                url: '@Url.Action("GetData")',
+                data: { id: id },
+                success: function (data) {
+                    $('#employeeForm').attr('action', '/Employee/Update/' + data.EmployeeID);
+                    $('#addButton').hide();
+                    $('#updateButton').show();
+
+                    $('input[name="EmployeeName"]').val(data.EmployeeName);
+                    $('input[name="ShortName"]').val(data.ShortName);
+                    $('input[name="DateOfBirth"]').val(data.DateOfBirth.split('T')[0]);
+                    $('input[name="Age"]').val(data.Age);
+                    $('input[name="Gender"][value="' + data.Gender + '"]').prop('checked', true);
+
+                    var languages = data.LanguageKnown.split(',');
+                    $('input[name="LanguageKnown"]').each(function () {
+                        if (languages.includes($(this).val())) {
+                            $(this).prop('checked', true);
+                        } else {
+                            $(this).prop('checked', false);
+                        }
+                    });
+                }
+            });
+        }
+
+        function updateEmployee() {
+            $('#employeeForm').submit();
+        }
+        function closeWindow() {
+            window.close();
+        }
+    </script>
+}
+
+
+
+
